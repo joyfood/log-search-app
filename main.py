@@ -3,7 +3,8 @@ import re
 
 def main(page: ft.Page):
     page.title = "업무일지 검색"
-    page.theme_mode = ft.ThemeMode.LIGHT
+    # ★ 이 부분이 LIGHT에서 DARK로 변경되었습니다! ★
+    page.theme_mode = ft.ThemeMode.DARK 
     page.scroll = ft.ScrollMode.AUTO
     page.padding = 20
 
@@ -11,19 +12,20 @@ def main(page: ft.Page):
     log_filename = page.client_storage.get("log_filename") or ""
     current_search_results = []
 
-    title = ft.Text("🔍 업무일지 검색", size=20, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_700)
+    # 검은 바탕에 잘 보이도록 제목을 밝은 파스텔톤 파란색(BLUE_300)으로 변경
+    title = ft.Text("🔍 업무일지 검색", size=20, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_300)
     
     file_status = ft.Text(
         f"📁 현재 저장된 파일: {log_filename}" if log_filename else "📁 선택된 파일이 없습니다.", 
-        color=ft.colors.GREEN_700 if log_filename else ft.colors.RED,
+        color=ft.colors.GREEN_300 if log_filename else ft.colors.RED_300, # 밝은 초록/빨강으로 변경
         weight=ft.FontWeight.BOLD,
         size=16
     )
     
     search_input = ft.TextField(
         label="검색어를 입력하세요", 
-        border_color=ft.colors.BLUE,
-        focused_border_color=ft.colors.BLUE_700
+        border_color=ft.colors.BLUE_400,
+        focused_border_color=ft.colors.BLUE_300
     )
     
     result_count = ft.Text(
@@ -52,13 +54,13 @@ def main(page: ft.Page):
                 page.client_storage.set("log_filename", log_filename)
                 
                 file_status.value = f"📁 파일 업데이트 완료: {log_filename}"
-                file_status.color = ft.colors.GREEN_700
+                file_status.color = ft.colors.GREEN_300
                 result_count.value = "✅ 파일이 성공적으로 기억되었습니다. 검색해보세요!"
                 result_view.controls.clear()
                 page.update()
             except Exception as ex:
                 file_status.value = f"❌ 파일 읽기 오류: {str(ex)}"
-                file_status.color = ft.colors.RED
+                file_status.color = ft.colors.RED_300
                 page.update()
 
     file_picker = ft.FilePicker(on_result=on_file_picked)
@@ -70,13 +72,13 @@ def main(page: ft.Page):
         
         if not log_content:
             result_count.value = "❌ 업무일지 파일을 먼저 선택해주세요!"
-            result_count.color = ft.colors.RED
+            result_count.color = ft.colors.RED_300
             page.update()
             return
             
         if not keyword:
             result_count.value = "❌ 검색어를 입력해주세요!"
-            result_count.color = ft.colors.RED
+            result_count.color = ft.colors.RED_300
             page.update()
             return
 
@@ -84,7 +86,6 @@ def main(page: ft.Page):
         curr_date = ""
         curr_block = []
 
-        # 윈도우, 맥, 브라우저 복사 환경의 줄바꿈 문자를 완벽히 통일
         normalized_content = log_content.replace('\r\n', '\n').replace('\r', '\n')
         
         for line in normalized_content.split('\n'):
@@ -100,7 +101,6 @@ def main(page: ft.Page):
                 curr_block = []
                 continue
 
-            # 특수 공백(Zero-width space 등)이나 일반 공백을 모두 완벽하게 잡아내는 정규식 적용
             is_indented = bool(re.match(r'^\s+', line))
 
             if not is_indented:
@@ -126,20 +126,21 @@ def main(page: ft.Page):
         result_view.controls.clear()
         if found_blocks:
             result_count.value = f"✅ 총 {len(found_blocks)}개의 항목을 찾았습니다!"
-            result_count.color = ft.colors.GREEN_700
+            result_count.color = ft.colors.GREEN_300
             for fb in found_blocks:
                 result_view.controls.append(
                     ft.Container(
                         content=ft.Text(fb, size=16),
                         padding=15,
-                        border=ft.border.all(1, ft.colors.BLUE_200),
+                        # 결과창 배경을 어두운 푸른빛 회색으로, 테두리를 은은하게 변경
+                        border=ft.border.all(1, ft.colors.BLUE_GREY_700),
                         border_radius=8,
-                        bgcolor=ft.colors.BLUE_50
+                        bgcolor=ft.colors.BLUE_GREY_900 
                     )
                 )
         else:
             result_count.value = "❌ 검색 결과가 없습니다."
-            result_count.color = ft.colors.RED
+            result_count.color = ft.colors.RED_300
 
         page.update()
 
@@ -173,8 +174,8 @@ def main(page: ft.Page):
         ft.Divider(),
         search_input,
         ft.Row([
-            ft.ElevatedButton("🔍 2. 검색하기", on_click=search_click, bgcolor=ft.colors.BLUE_600, color=ft.colors.WHITE, height=45),
-            ft.ElevatedButton("📋 3. 결과 복사", on_click=copy_click, bgcolor=ft.colors.GREEN_600, color=ft.colors.WHITE, height=45),
+            ft.ElevatedButton("🔍 2. 검색하기", on_click=search_click, bgcolor=ft.colors.BLUE_700, color=ft.colors.WHITE, height=45),
+            ft.ElevatedButton("📋 3. 결과 복사", on_click=copy_click, bgcolor=ft.colors.GREEN_700, color=ft.colors.WHITE, height=45),
         ], wrap=True),
         ft.Divider(),
         result_count,
